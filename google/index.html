@@ -262,7 +262,7 @@ footer button{
 }
 footer button:hover{border-color:var(--fg)}
 footer button.danger:hover{border-color:var(--danger);color:var(--danger)}
-#modal{
+#modal,#homeModal{
   position:fixed;
   inset:0;
   background:var(--overlay);
@@ -272,7 +272,7 @@ footer button.danger:hover{border-color:var(--danger);color:var(--danger)}
   z-index:50;
   padding:16px;
 }
-#modal.open{display:flex}
+#modal.open,#homeModal.open{display:flex}
 .modal-box{
   background:var(--modal-bg);
   color:var(--fg);
@@ -339,8 +339,17 @@ footer button.danger:hover{border-color:var(--danger);color:var(--danger)}
   border-radius:999px;
   cursor:pointer;
 }
-#saveLink{background:var(--accent);color:var(--bg)}
-#cancelLink{background:transparent;color:var(--fg);border:2px solid var(--fg)}
+#saveLink,#copyHome{background:var(--accent);color:var(--bg)}
+#cancelLink,#closeHome{background:transparent;color:var(--fg);border:2px solid var(--fg)}
+#homeModal .modal-box{max-height:100%;overflow-y:auto}
+.home-note{font-size:14px;line-height:1.5;color:var(--muted);margin-bottom:16px}
+.home-steps{margin:0 0 4px 20px;font-size:15px;line-height:1.5}
+.home-steps li{margin-bottom:6px}
+.home-steps code,.home-other code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px}
+.home-other{margin-top:14px;font-size:14px;color:var(--muted)}
+.home-other summary{cursor:pointer;font-weight:700}
+.home-other p{margin-top:10px;line-height:1.5}
+.home-other b{color:var(--fg)}
 @media (max-width:520px){
   .wordmark{font-size:46px}
   #searchForm{flex-direction:column}
@@ -372,6 +381,7 @@ footer button.danger:hover{border-color:var(--danger);color:var(--danger)}
   <button id="themeBtn" type="button">Toggle theme</button>
   <button id="exportBtn" type="button">Export links</button>
   <button id="importBtn" type="button">Import links</button>
+  <button id="homeBtn" type="button">Set as homepage</button>
   <button id="resetBtn" class="danger" type="button">Reset links</button>
   <input type="file" id="importFile" accept="application/json" hidden>
 </footer>
@@ -402,6 +412,26 @@ footer button.danger:hover{border-color:var(--danger);color:var(--danger)}
         <button type="submit" id="saveLink">Save</button>
       </div>
     </form>
+  </div>
+</div>
+
+<div id="homeModal">
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="homeTitle">
+    <h2 id="homeTitle">Set as homepage</h2>
+    <p class="home-note" id="homeNote"></p>
+    <div class="field">
+      <label for="homeUrl">Page address</label>
+      <input type="text" id="homeUrl" readonly>
+    </div>
+    <ol class="home-steps" id="homeSteps"></ol>
+    <details class="home-other" id="homeOther">
+      <summary>Other browsers</summary>
+      <div id="homeOtherList"></div>
+    </details>
+    <div class="modal-actions">
+      <button type="button" id="closeHome">Close</button>
+      <button type="button" id="copyHome">Copy address</button>
+    </div>
   </div>
 </div>
 
@@ -812,8 +842,9 @@ searchForm.addEventListener("submit",function(ev){
 document.addEventListener("keydown",function(ev){
   var t=ev.target;
   var typing=t&&(t.tagName==="INPUT"||t.tagName==="TEXTAREA");
+  if(ev.key==="Escape"&&homeModal.classList.contains("open")){closeHome();return;}
   if(ev.key==="Escape"&&modal.classList.contains("open")){closeModal();return;}
-  if(!typing&&!modal.classList.contains("open")){
+  if(!typing&&!modal.classList.contains("open")&&!homeModal.classList.contains("open")){
     if(ev.key==="ArrowRight"){ev.preventDefault();rotateMode(1);return;}
     if(ev.key==="ArrowLeft"){ev.preventDefault();rotateMode(-1);return;}
     if(ev.key==="y"||ev.key==="Y"){ev.preventDefault();setYt(true);qInput.focus();return;}
@@ -871,6 +902,131 @@ document.getElementById("resetBtn").addEventListener("click",function(){
     save();
     render();
   }
+});
+
+var homeModal=document.getElementById("homeModal");
+var homeUrl=document.getElementById("homeUrl");
+var homeSteps=document.getElementById("homeSteps");
+
+var HOME_GUIDES=[
+  {key:"chrome",name:"Chrome",steps:[
+    "Open <b>Settings</b> (or paste <code>chrome://settings/onStartup</code> into the address bar).",
+    "Under <b>On startup</b>, choose <b>Open a specific page or set of pages</b>, then <b>Add a new page</b> and paste the address.",
+    "For the Home button: <b>Settings &rarr; Appearance &rarr; Show home button</b>, then enter the address."]},
+  {key:"chromium",name:"Chromium",steps:[
+    "Open <b>Settings</b> (or paste <code>chrome://settings/onStartup</code> into the address bar).",
+    "Under <b>On startup</b>, choose <b>Open a specific page or set of pages</b>, then <b>Add a new page</b> and paste the address.",
+    "For the Home button: <b>Settings &rarr; Appearance &rarr; Show home button</b>, then enter the address."]},
+  {key:"brave",name:"Brave",steps:[
+    "Open <b>Settings &rarr; Get started</b> (or paste <code>brave://settings/getStarted</code> into the address bar).",
+    "Under <b>On startup</b>, choose <b>Open a specific page or set of pages</b>, then <b>Add a new page</b> and paste the address.",
+    "For the Home button: <b>Settings &rarr; Appearance &rarr; Show home button</b>, then enter the address."]},
+  {key:"edge",name:"Edge",steps:[
+    "Open <b>Settings &rarr; Start, home, and new tab page</b>.",
+    "Under <b>When Edge starts</b>, choose <b>Open these pages</b>, then <b>Add a new page</b> and paste the address.",
+    "For the Home button: turn on <b>Show home button on the toolbar</b> and enter the address."]},
+  {key:"firefox",name:"Firefox",steps:[
+    "Open <b>Settings &rarr; Home</b> (or paste <code>about:preferences#home</code> into the address bar).",
+    "Set <b>Homepage and new windows</b> to <b>Custom URLs&hellip;</b>",
+    "Paste the address, or choose <b>Use Current Page</b>."]},
+  {key:"safari",name:"Safari",steps:[
+    "On a Mac, open <b>Safari &rarr; Settings &rarr; General</b>.",
+    "Paste the address into <b>Homepage</b>, or choose <b>Set to Current Page</b>.",
+    "Set <b>New windows open with</b> and <b>New tabs open with</b> to <b>Homepage</b>.",
+    "On iPhone and iPad, Safari has no homepage setting: use <b>Share &rarr; Add to Home Screen</b>."]},
+  {key:"duckduckgo",name:"DuckDuckGo",steps:[
+    "In the desktop app, open <b>Settings &rarr; General</b>.",
+    "Under <b>Homepage</b>, choose <b>Specific page</b> and paste the address.",
+    "The mobile app has no homepage setting: add this page to your favorites or home screen."]},
+  {key:"ie",name:"Internet Explorer",steps:[
+    "Open <b>Tools &rarr; Internet options</b>.",
+    "On the <b>General</b> tab, under <b>Home page</b>, paste the address or choose <b>Use current</b>.",
+    "Choose <b>OK</b>."]}
+];
+
+function homeAddress(){
+  if(location.protocol==="http:"||location.protocol==="https:"){
+    return location.protocol+"//"+location.host+location.pathname;
+  }
+  return location.href.split("#")[0].split("?")[0];
+}
+
+function detectBrowser(){
+  var ua=navigator.userAgent||"";
+  if(/MSIE |Trident\//.test(ua))return "ie";
+  if(/DuckDuckGo|Ddg\//i.test(ua))return "duckduckgo";
+  if(navigator.brave)return "brave";
+  if(/Firefox\/|FxiOS\//.test(ua))return "firefox";
+  if(/Edg(e|A|iOS)?\//.test(ua))return "edge";
+  if(/Chrome\/|Chromium\/|CriOS\//.test(ua)){
+    var brands=navigator.userAgentData&&navigator.userAgentData.brands;
+    if(brands&&brands.length){
+      for(var i=0;i<brands.length;i++){
+        if(brands[i].brand==="Google Chrome")return "chrome";
+      }
+      return "chromium";
+    }
+    return /Chromium\//.test(ua)?"chromium":"chrome";
+  }
+  if(/Safari\//.test(ua))return "safari";
+  return "";
+}
+
+function trySetHomePage(btn,url){
+  if(detectBrowser()!=="ie")return false;
+  try{
+    btn.style.behavior="url(#default#homepage)";
+    if(typeof btn.setHomePage==="undefined")return false;
+    btn.setHomePage(url);
+    return true;
+  }catch(e){
+    return false;
+  }
+}
+
+function stepsHtml(steps){
+  var out="";
+  for(var i=0;i<steps.length;i++){out+="<li>"+steps[i]+"</li>";}
+  return out;
+}
+
+function openHome(){
+  var current=detectBrowser();
+  var guide=null;
+  var others="";
+  for(var i=0;i<HOME_GUIDES.length;i++){
+    var g=HOME_GUIDES[i];
+    if(g.key===current){guide=g;continue;}
+    others+="<p><b>"+g.name+"</b></p><ol class=\"home-steps\">"+stepsHtml(g.steps)+"</ol>";
+  }
+  homeUrl.value=homeAddress();
+  document.getElementById("homeNote").textContent=guide
+    ?"Browsers don't let a page change your homepage for you. Copy the address, then follow these steps in "+guide.name+"."
+    :"Browsers don't let a page change your homepage for you. Copy the address, then follow the steps for your browser.";
+  homeSteps.innerHTML=guide?stepsHtml(guide.steps):"";
+  homeSteps.style.display=guide?"":"none";
+  document.getElementById("homeOtherList").innerHTML=others;
+  document.getElementById("homeOther").open=!guide;
+  homeModal.classList.add("open");
+  homeUrl.focus();
+  homeUrl.select();
+}
+
+function closeHome(){
+  homeModal.classList.remove("open");
+}
+
+document.getElementById("homeBtn").addEventListener("click",function(){
+  if(trySetHomePage(this,homeAddress()))return;
+  openHome();
+});
+document.getElementById("closeHome").addEventListener("click",closeHome);
+document.getElementById("copyHome").addEventListener("click",function(){
+  copyToClipboard(homeUrl.value);
+  showToast("Address copied");
+});
+homeModal.addEventListener("click",function(ev){
+  if(ev.target===homeModal)closeHome();
 });
 
 load();

@@ -10,7 +10,7 @@ Simpler, distraction-free start pages for everyday sites. Each frontend is a sin
 
 ## Use it as your browser homepage
 
-Set your browser's homepage or new-tab page to the live URL for the frontend you want.
+Set your browser's homepage or new-tab page to the live URL for the frontend you want. The Google frontend has a **Set as homepage** button in its footer that copies the address and shows the steps for your browser; browsers no longer let a page change the homepage itself (only Internet Explorer does).
 
 ## Adding a frontend
 
