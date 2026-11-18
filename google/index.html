@@ -237,6 +237,7 @@ main{
   font-weight:600;
   text-align:center;
   max-width:90vw;
+  width:max-content;
   opacity:0;
   pointer-events:none;
   transition:opacity .2s,transform .2s;
@@ -360,12 +361,129 @@ footer button.danger:hover{border-color:var(--danger);color:var(--danger)}
 @media (min-width:1024px){.search-wrap{max-width:980px}}
 @media (min-width:1440px){.search-wrap{max-width:1120px}}
 @media (min-width:1920px){#q{max-width:533px}}
+
+/* View control (focus mode) */
+[hidden]{display:none!important}
+header#menu{position:relative;display:flex;align-items:flex-start;gap:12px}
+.menu-row{flex:1 1 auto;min-width:0}
+#viewBtn{
+  flex:0 0 auto;
+  width:44px;height:44px;
+  margin-left:auto;
+  padding:0;
+  border-radius:50%;
+  border:2px solid var(--muted);
+  background:transparent;
+  color:var(--fg);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  transition:border-color .12s,color .12s;
+}
+#viewBtn:hover{border-color:var(--fg)}
+#viewBtn[aria-expanded="true"]{border-color:var(--accent);color:var(--accent)}
+#viewBtn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+#viewPanel{
+  position:absolute;
+  top:100%;right:24px;
+  z-index:40;
+  width:264px;
+  max-width:calc(100vw - 32px);
+  background:var(--modal-bg);
+  color:var(--fg);
+  border:2px solid var(--fg);
+  border-radius:16px;
+  padding:12px 10px 10px;
+  display:flex;flex-direction:column;gap:2px;
+  box-shadow:0 12px 30px rgba(0,0,0,.45);
+}
+#viewPanel:focus{outline:none}
+#viewTitle{
+  font-size:13px;
+  font-weight:700;
+  color:var(--muted);
+  margin:2px 10px 8px;
+}
+.view-switch{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  width:100%;min-height:44px;
+  padding:8px 10px;
+  border:0;border-radius:10px;
+  background:transparent;
+  color:var(--fg);
+  font:inherit;font-size:15px;font-weight:400;text-align:left;
+  cursor:pointer;
+  transition:background-color .12s;
+}
+.view-switch:hover{background:color-mix(in srgb,var(--fg) 12%,transparent)}
+.view-switch:focus-visible{outline:3px solid var(--accent);outline-offset:-1px}
+.view-switch .sw{
+  flex:0 0 auto;
+  width:24px;height:24px;
+  border-radius:7px;
+  border:2px solid var(--muted);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--bg);
+  transition:background-color .12s,border-color .12s;
+}
+.view-switch .sw svg{display:none}
+.view-switch[aria-checked="true"] .sw{background:var(--accent);border-color:var(--accent)}
+.view-switch[aria-checked="true"] .sw svg{display:block}
+.presets{display:flex;flex-direction:column;gap:6px;margin-top:14px}
+.preset{
+  min-height:44px;
+  padding:9px 14px;
+  border-radius:999px;
+  border:2px solid var(--muted);
+  background:transparent;
+  color:var(--fg);
+  font:inherit;font-size:14px;font-weight:600;text-align:left;
+  cursor:pointer;
+  transition:background-color .12s,border-color .12s,color .12s;
+}
+.preset:hover{border-color:var(--fg)}
+.preset:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.preset[data-active="true"]{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+.mic{
+  flex:0 0 auto;
+  width:54px;height:54px;
+  padding:0;
+  border-radius:50%;
+  border:3px solid var(--input-border);
+  background:var(--input-bg);
+  color:var(--fg);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  transition:border-color .12s,color .12s;
+}
+.mic:hover{border-color:var(--accent)}
+.mic:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.mic[data-listening="true"]{border-color:var(--accent);color:var(--accent)}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition:none!important;animation:none!important}
+}
 </style>
 </head>
 <body>
 
 <header id="menu">
   <div class="menu-row" id="menuRow"></div>
+  <button id="viewBtn" type="button" aria-label="View options" aria-expanded="false" aria-controls="viewPanel" title="View options">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+      <line x1="3.5" y1="8" x2="20.5" y2="8"/><line x1="3.5" y1="16" x2="20.5" y2="16"/>
+      <circle cx="9" cy="8" r="2.6" fill="var(--bg)"/><circle cx="15" cy="16" r="2.6" fill="var(--bg)"/>
+    </svg>
+  </button>
+  <div id="viewPanel" role="dialog" aria-modal="false" aria-labelledby="viewTitle" tabindex="-1" hidden>
+    <h2 id="viewTitle">View</h2>
+    <button class="view-switch" type="button" role="switch" aria-checked="true" aria-label="Show favourites" data-region="menu">Favourites<span class="sw" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17.5 19 7"/></svg></span></button>
+    <button class="view-switch" type="button" role="switch" aria-checked="true" aria-label="Show instructions" data-region="hint">Instructions<span class="sw" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17.5 19 7"/></svg></span></button>
+    <button class="view-switch" type="button" role="switch" aria-checked="true" aria-label="Show footer buttons" data-region="foot">Footer<span class="sw" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17.5 19 7"/></svg></span></button>
+    <div class="presets">
+      <button class="preset" type="button" data-preset="everything" title="Ctrl+Shift+1">Everything</button>
+      <button class="preset" type="button" data-preset="calm" title="Ctrl+Shift+2">Calm</button>
+      <button class="preset" type="button" data-preset="search" title="Ctrl+Shift+3">Search only</button>
+    </div>
+  </div>
 </header>
 
 <main>
@@ -450,6 +568,7 @@ var LS_LINKS="homepage.links";
 var LS_THEME="homepage.theme";
 var LS_MODE="homepage.mode";
 var LS_YT="homepage.yt";
+var LS_VIEW="homepage.view";
 var MAX_EMBED=3000000;
 
 var MODES=[
@@ -482,6 +601,7 @@ var embeddedData="";
 var activeMode=0;
 var ytMode=false;
 var toastTimer=null;
+var viewState={menu:true,hint:true,foot:true};
 
 var menuRow=document.getElementById("menuRow");
 var searchForm=document.getElementById("searchForm");
@@ -527,6 +647,14 @@ function load(){
   var yt=null;
   try{yt=localStorage.getItem(LS_YT);}catch(e){}
   if(yt==="1"){ytMode=true;document.body.classList.add("yt-mode");}
+  var view=null;
+  try{view=localStorage.getItem(LS_VIEW);}catch(e){}
+  if(view){
+    var vp=view.split(",");
+    if(vp.length===3){
+      viewState={menu:vp[0]==="1",hint:vp[1]==="1",foot:vp[2]==="1"};
+    }
+  }
 }
 
 function save(){
@@ -1034,9 +1162,322 @@ homeModal.addEventListener("click",function(ev){
   if(ev.target===homeModal)closeHome();
 });
 
+/* ---------- View control: explicit, predictable, remembered ---------- */
+
+var viewEls={
+  menu:menuRow,
+  hint:document.querySelector(".hint"),
+  foot:document.querySelector("footer")
+};
+var ytHintEl=document.getElementById("ytHint");
+var viewPanel=document.getElementById("viewPanel");
+var viewBtn=document.getElementById("viewBtn");
+
+var PRESETS={
+  everything:{menu:true,hint:true,foot:true},
+  calm:{menu:false,hint:false,foot:true},
+  search:{menu:false,hint:false,foot:false}
+};
+var PRESET_ORDER=["everything","calm","search"];
+
+function viewPresetName(){
+  if(viewState.menu&&viewState.hint&&viewState.foot)return "everything";
+  if(!viewState.menu&&!viewState.hint&&viewState.foot)return "calm";
+  if(!viewState.menu&&!viewState.hint&&!viewState.foot)return "search";
+  return "";
+}
+
+function viewVisibleCount(){
+  return (viewState.menu?1:0)+(viewState.hint?1:0)+(viewState.foot?1:0);
+}
+
+function saveView(){
+  try{localStorage.setItem(LS_VIEW,(viewState.menu?"1":"0")+","+(viewState.hint?"1":"0")+","+(viewState.foot?"1":"0"));}catch(e){}
+}
+
+function syncViewUI(){
+  var sws=viewPanel.querySelectorAll(".view-switch");
+  for(var i=0;i<sws.length;i++){
+    var r=sws[i].getAttribute("data-region");
+    sws[i].setAttribute("aria-checked",viewState[r]?"true":"false");
+  }
+  var name=viewPresetName();
+  var ps=viewPanel.querySelectorAll(".preset");
+  for(var j=0;j<ps.length;j++){
+    var on=ps[j].getAttribute("data-preset")===name;
+    ps[j].setAttribute("data-active",on?"true":"false");
+    ps[j].setAttribute("aria-pressed",on?"true":"false");
+  }
+}
+
+function applyView(st,announce,save){
+  viewState={menu:!!st.menu,hint:!!st.hint,foot:!!st.foot};
+  viewEls.menu.hidden=!viewState.menu;
+  viewEls.hint.hidden=!viewState.hint;
+  ytHintEl.hidden=!viewState.hint;
+  viewEls.foot.hidden=!viewState.foot;
+  syncViewUI();
+  if(save!==false)saveView();
+  if(announce)showToast(announce);
+}
+
+function viewAnnouncement(st){
+  if(st.menu&&st.hint&&st.foot)return "Everything shown";
+  if(!st.menu&&!st.hint&&!st.foot)return "Favourites, instructions and footer hidden";
+  if(!st.menu&&!st.hint&&st.foot)return "Favourites and instructions hidden";
+  return "Favourites "+(st.menu?"shown":"hidden")+", instructions "+(st.hint?"shown":"hidden")+", footer "+(st.foot?"shown":"hidden");
+}
+
+function openViewPanel(){
+  viewPanel.hidden=false;
+  viewBtn.setAttribute("aria-expanded","true");
+  viewPanel.focus();
+}
+
+function closeViewPanel(returnFocus){
+  if(viewPanel.hidden)return;
+  viewPanel.hidden=true;
+  viewBtn.setAttribute("aria-expanded","false");
+  if(returnFocus)viewBtn.focus();
+}
+
+viewBtn.addEventListener("click",function(){
+  if(viewPanel.hidden){openViewPanel();}else{closeViewPanel(true);}
+});
+
+document.addEventListener("click",function(ev){
+  if(viewPanel.hidden)return;
+  if(viewPanel.contains(ev.target)||viewBtn.contains(ev.target))return;
+  closeViewPanel(false);
+});
+
+(function(){
+  var LABEL={menu:"Favourites",hint:"Instructions",foot:"Footer buttons"};
+  var sws=viewPanel.querySelectorAll(".view-switch");
+  for(var i=0;i<sws.length;i++){
+    sws[i].addEventListener("click",function(){
+      var r=this.getAttribute("data-region");
+      var next={menu:viewState.menu,hint:viewState.hint,foot:viewState.foot};
+      next[r]=!next[r];
+      applyView(next,LABEL[r]+(next[r]?" shown":" hidden"),true);
+    });
+  }
+  var ps=viewPanel.querySelectorAll(".preset");
+  for(var j=0;j<ps.length;j++){
+    ps[j].addEventListener("click",function(){
+      var p=PRESETS[this.getAttribute("data-preset")];
+      applyView(p,viewAnnouncement(p),true);
+    });
+  }
+})();
+
+function viewFromUrl(){
+  var m=/[?&]view=([^&#]*)/.exec(location.search);
+  if(!m)return "";
+  var v=decodeURIComponent(m[1]).toLowerCase();
+  v=v.replace(/[^a-z]+/g,"-");
+  if(v==="all"||v==="everything")return "everything";
+  if(v==="calm")return "calm";
+  if(v==="search"||v==="search-only"||v==="searchonly")return "search";
+  return "";
+}
+
+function isTypingTarget(t){
+  return !!t&&(t.tagName==="INPUT"||t.tagName==="TEXTAREA"||t.isContentEditable);
+}
+
+document.addEventListener("keydown",function(ev){
+  var modalOpen=modal.classList.contains("open")||homeModal.classList.contains("open");
+  if(ev.key==="Escape"&&!modalOpen&&!viewPanel.hidden){
+    ev.preventDefault();
+    closeViewPanel(true);
+    return;
+  }
+  var name="";
+  if((ev.ctrlKey||ev.metaKey)&&ev.shiftKey){
+    if(ev.code==="Digit1")name="everything";
+    else if(ev.code==="Digit2")name="calm";
+    else if(ev.code==="Digit3")name="search";
+    if(name){
+      ev.preventDefault();
+      applyView(PRESETS[name],viewAnnouncement(PRESETS[name]),true);
+    }
+    return;
+  }
+  if(modalOpen||isTypingTarget(ev.target)||ev.altKey||ev.ctrlKey||ev.metaKey)return;
+  if(ev.code==="Digit1")name="everything";
+  else if(ev.code==="Digit2")name="calm";
+  else if(ev.code==="Digit3")name="search";
+  if(name){
+    ev.preventDefault();
+    applyView(PRESETS[name],viewAnnouncement(PRESETS[name]),true);
+  }
+});
+
+/* Swipe on empty background: left shows less, right shows more. */
+var touchOrigin=null;
+document.addEventListener("touchstart",function(ev){
+  touchOrigin=null;
+  if(ev.touches.length!==1)return;
+  var t=ev.target;
+  if(t.closest&&t.closest("#menuRow,#viewPanel,button,input,form,#modal,#homeModal"))return;
+  touchOrigin={x:ev.touches[0].clientX,y:ev.touches[0].clientY};
+},{passive:true});
+
+document.addEventListener("touchend",function(ev){
+  if(!touchOrigin)return;
+  var t=ev.changedTouches[0];
+  var dx=t.clientX-touchOrigin.x;
+  var dy=t.clientY-touchOrigin.y;
+  touchOrigin=null;
+  if(Math.abs(dx)<60||Math.abs(dx)<Math.abs(dy)*1.5)return;
+  var cur=viewPresetName();
+  var idx=cur?PRESET_ORDER.indexOf(cur):-1;
+  if(idx<0){
+    var n=viewVisibleCount();
+    idx=n>=3?0:(n>=1?1:2);
+  }
+  var next=idx+(dx<0?1:-1);
+  if(next<0||next>=PRESET_ORDER.length)return;
+  applyView(PRESETS[PRESET_ORDER[next]],viewAnnouncement(PRESETS[PRESET_ORDER[next]]),true);
+},{passive:true});
+
+/* ---------- On-device voice mode selection ---------- */
+
+var SRClass=window.SpeechRecognition||window.webkitSpeechRecognition;
+var voiceRec=null;
+var micBtn=null;
+
+function setVoiceStatus(s){
+  try{document.documentElement.setAttribute("data-voice",s);}catch(e){}
+}
+
+function micMarkup(){
+  return '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><line x1="12" y1="18" x2="12" y2="21"/></svg>';
+}
+
+function removeMic(){
+  if(voiceRec){try{voiceRec.abort();}catch(e){} voiceRec=null;}
+  if(micBtn&&micBtn.parentNode)micBtn.parentNode.removeChild(micBtn);
+  micBtn=null;
+}
+
+function setListening(on){
+  if(!micBtn)return;
+  micBtn.setAttribute("data-listening",on?"true":"false");
+  micBtn.setAttribute("aria-label",on?"Stop listening":"Voice commands");
+}
+
+function buildMic(){
+  if(micBtn)return;
+  micBtn=document.createElement("button");
+  micBtn.type="button";
+  micBtn.id="micBtn";
+  micBtn.className="mic";
+  micBtn.innerHTML=micMarkup();
+  micBtn.setAttribute("aria-label","Voice commands");
+  micBtn.title="Voice commands";
+  micBtn.addEventListener("click",toggleListen);
+  searchForm.appendChild(micBtn);
+}
+
+function handleVoice(raw){
+  var t=(raw||"").toLowerCase();
+  if(!t)return;
+  if(/\b(search only|only search|just search)\b/.test(t)){applyView(PRESETS.search,viewAnnouncement(PRESETS.search),true);return;}
+  if(/\b(everything|show all)\b/.test(t)){applyView(PRESETS.everything,viewAnnouncement(PRESETS.everything),true);return;}
+  if(/\bcalm\b/.test(t)){applyView(PRESETS.calm,viewAnnouncement(PRESETS.calm),true);return;}
+  if(/\b(youtube|you tube)\b/.test(t)){setYt(true);showToast("Mode: YouTube");qInput.focus();return;}
+  if(/\bgemini\b/.test(t)){setYt(false);setMode(1);showToast("Mode: Gemini");qInput.focus();return;}
+  if(/\ball\b/.test(t)){setYt(false);setMode(2);showToast("Mode: All");qInput.focus();return;}
+  if(/\b(google|web)\b/.test(t)){setYt(false);setMode(0);showToast("Mode: Google");qInput.focus();return;}
+  showToast("Not recognised.");
+}
+
+function toggleListen(){
+  if(voiceRec){try{voiceRec.stop();}catch(e){} return;}
+  var r=null;
+  try{r=new SRClass();}catch(e){removeMic();setVoiceStatus("unavailable");return;}
+  try{r.processLocally=true;}catch(e){removeMic();setVoiceStatus("unavailable");return;}
+  if(r.processLocally!==true){removeMic();setVoiceStatus("unavailable");return;}
+  r.lang="en-US";
+  r.interimResults=false;
+  r.maxAlternatives=1;
+  r.continuous=false;
+  r.onresult=function(ev){
+    var t="";
+    for(var i=0;i<ev.results.length;i++){
+      var alt=ev.results[i]&&ev.results[i][0];
+      if(alt&&alt.transcript)t+=" "+alt.transcript;
+    }
+    handleVoice(t);
+  };
+  r.onerror=function(ev){
+    setListening(false);
+    var code=ev&&ev.error;
+    if(code==="language-not-supported"){
+      removeMic();
+      setVoiceStatus("unavailable");
+      showToast("Voice mode is not available in this browser.");
+      return;
+    }
+    if(code==="not-allowed"||code==="service-not-allowed"){
+      showToast("Microphone access was blocked.");
+      return;
+    }
+    if(code!=="aborted"&&code!=="no-speech"){
+      showToast("Voice input stopped.");
+    }
+  };
+  r.onend=function(){
+    voiceRec=null;
+    setListening(false);
+  };
+  voiceRec=r;
+  try{
+    r.start();
+    setListening(true);
+    showToast("Listening");
+  }catch(e){
+    voiceRec=null;
+    setListening(false);
+    removeMic();
+    setVoiceStatus("unavailable");
+  }
+}
+
+function initVoice(){
+  if(!SRClass||typeof SRClass.available!=="function"){setVoiceStatus("unsupported");return;}
+  try{
+    var probe=new SRClass();
+    probe.processLocally=true;
+    if(probe.processLocally!==true){setVoiceStatus("unsupported");return;}
+  }catch(e){
+    setVoiceStatus("unsupported");
+    return;
+  }
+  var promise=null;
+  try{
+    promise=SRClass.available({langs:["en-US"],processLocally:true});
+  }catch(e){
+    setVoiceStatus("unavailable");
+    return;
+  }
+  if(!promise||typeof promise.then!=="function"){setVoiceStatus("unavailable");return;}
+  promise.then(function(status){
+    setVoiceStatus(status);
+    if(status==="available")buildMic();
+  },function(){
+    setVoiceStatus("unavailable");
+  });
+}
+
 load();
+var urlView=viewFromUrl();
+if(urlView){applyView(PRESETS[urlView],false,false);}else{applyView(viewState,false,false);}
 render();
 renderWheel();
+initVoice();
 })();
 </script>
 </body>
