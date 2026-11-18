@@ -166,6 +166,7 @@ main{
 }
 #q{
   flex:1;
+  width:100%;
   padding:16px 22px;
   font-size:20px;
   color:var(--input-fg);
@@ -174,8 +175,15 @@ main{
   border-radius:999px;
   outline:none;
   min-width:0;
-  max-width:452px;
 }
+.q-wrap{
+  position:relative;
+  flex:1;
+  min-width:0;
+  max-width:452px;
+  display:flex;
+}
+#q.has-mic{padding-right:66px}
 #q::placeholder{color:var(--muted)}
 #q:focus{border-color:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 35%, transparent)}
 .wheel{
@@ -224,6 +232,11 @@ main{
   color:var(--accent);
   letter-spacing:.5px;
 }
+body.theme-light.yt-mode #ytHint{color:#cc0000}
+body.theme-light.yt-mode #showAllBtn,
+body.theme-light.yt-mode #tourNext,
+body.theme-light.yt-mode .preset[data-active="true"],
+body.theme-light.yt-mode .mic[data-listening="true"]{background:#cc0000;border-color:#cc0000}
 #toast{
   position:fixed;
   bottom:26px;
@@ -360,7 +373,7 @@ footer button.danger:hover{border-color:var(--danger);color:var(--danger)}
 @media (min-width:768px){.search-wrap{max-width:820px}}
 @media (min-width:1024px){.search-wrap{max-width:980px}}
 @media (min-width:1440px){.search-wrap{max-width:1120px}}
-@media (min-width:1920px){#q{max-width:533px}}
+@media (min-width:1920px){.q-wrap{max-width:533px}}
 
 /* View control (focus mode) */
 [hidden]{display:none!important}
@@ -394,6 +407,8 @@ header#menu{position:relative;display:flex;align-items:flex-start;gap:12px}
   border-radius:16px;
   padding:12px 10px 10px;
   display:flex;flex-direction:column;gap:2px;
+  max-height:calc(100vh - 96px);
+  overflow-y:auto;
   box-shadow:0 12px 30px rgba(0,0,0,.45);
 }
 #viewPanel:focus{outline:none}
@@ -444,20 +459,117 @@ header#menu{position:relative;display:flex;align-items:flex-start;gap:12px}
 .preset:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .preset[data-active="true"]{background:var(--accent);border-color:var(--accent);color:var(--bg)}
 .mic{
-  flex:0 0 auto;
-  width:54px;height:54px;
+  position:absolute;
+  right:9px;top:0;bottom:0;
+  margin:auto 0;
+  width:44px;height:44px;
   padding:0;
   border-radius:50%;
-  border:3px solid var(--input-border);
-  background:var(--input-bg);
+  border:2px solid transparent;
+  background:transparent;
   color:var(--fg);
   display:flex;align-items:center;justify-content:center;
   cursor:pointer;
   transition:border-color .12s,color .12s;
 }
-.mic:hover{border-color:var(--accent)}
+.mic:hover{border-color:var(--muted)}
 .mic:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
-.mic[data-listening="true"]{border-color:var(--accent);color:var(--accent)}
+.mic[data-listening="true"]{border-color:var(--accent);background:var(--accent);color:var(--bg)}
+.view-ctl{margin-left:auto;display:flex;align-items:center;gap:10px;flex:0 0 auto}
+#viewBtn{margin-left:0}
+#showAllBtn{
+  min-height:44px;
+  padding:0 18px;
+  border-radius:999px;
+  border:2px solid var(--accent);
+  background:var(--accent);
+  color:var(--bg);
+  font:inherit;font-size:14px;font-weight:700;
+  cursor:pointer;
+  white-space:nowrap;
+}
+#showAllBtn:hover{border-color:var(--fg)}
+#showAllBtn:focus-visible{outline:3px solid var(--fg);outline-offset:2px}
+.view-switch .sub{
+  display:block;
+  margin-top:2px;
+  font-size:12px;
+  line-height:1.35;
+  color:var(--muted);
+}
+.view-switch .lbl{flex:1 1 auto;min-width:0}
+.view-switch[aria-disabled="true"]{cursor:default}
+.view-switch[aria-disabled="true"] .sw{border-style:dashed}
+.panel-group{margin-top:18px;padding:0 10px 4px}
+#peekGroup{padding:0}
+.panel-group h3{font-size:13px;font-weight:700;color:var(--muted);margin-bottom:8px}
+.panel-group p{font-size:13px;line-height:1.45;color:var(--fg);margin-bottom:10px}
+.panel-btn{
+  width:100%;
+  min-height:44px;
+  padding:9px 14px;
+  border-radius:999px;
+  border:2px solid var(--fg);
+  background:transparent;
+  color:var(--fg);
+  font:inherit;font-size:14px;font-weight:600;text-align:left;
+  cursor:pointer;
+}
+.panel-btn:hover{border-color:var(--accent)}
+.panel-btn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.panel-btn:disabled{cursor:progress;border-color:var(--muted);color:var(--muted)}
+#tutorialBtn{margin-top:14px}
+#menuRow.peeked,footer.peeked{animation:peekIn .16s ease-out}
+@keyframes peekIn{from{opacity:0}to{opacity:1}}
+/* Guided tutorial */
+#tour{position:fixed;inset:0;z-index:90}
+#tourCatch{position:absolute;inset:0;background:transparent}
+#tourRing{
+  position:fixed;
+  border:3px solid var(--accent);
+  border-radius:14px;
+  box-shadow:0 0 0 200vmax rgba(0,0,0,.62);
+  pointer-events:none;
+}
+#tourRing.no-target{border:0;width:0;height:0;left:50%;top:50%}
+body.theme-light #tourRing{box-shadow:0 0 0 200vmax rgba(0,0,0,.45)}
+.tour-card{
+  position:fixed;
+  width:340px;
+  max-width:calc(100vw - 32px);
+  background:var(--modal-bg);
+  color:var(--fg);
+  border:3px solid var(--fg);
+  border-radius:18px;
+  padding:20px 20px 16px;
+  box-shadow:0 12px 30px rgba(0,0,0,.45);
+}
+.tour-card:focus{outline:none}
+#tourCount{font-size:13px;font-weight:700;color:var(--muted);margin-bottom:6px}
+#tourTitle{font-size:20px;margin-bottom:8px}
+#tourTitle:focus{outline:none}
+#tourBody{font-size:15px;line-height:1.5}
+#tourBody code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;white-space:nowrap}
+#tourBody code.url{display:block;margin:6px 0;white-space:normal;overflow-wrap:anywhere}
+#tourBody kbd{font-family:inherit;font-weight:700}
+.tour-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
+.tour-actions button{
+  min-height:44px;
+  padding:10px 18px;
+  font:inherit;font-size:15px;font-weight:700;
+  border-radius:999px;
+  cursor:pointer;
+  background:transparent;
+  color:var(--fg);
+  border:2px solid var(--fg);
+}
+#tourClose{margin-right:auto;border-color:var(--muted)}
+#tourNext{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+.tour-actions button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+#tourNext:focus-visible{outline-color:var(--fg)}
+@media (max-width:520px){
+  #showAllBtn{padding:0 14px}
+}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{transition:none!important;animation:none!important}
 }
@@ -467,12 +579,15 @@ header#menu{position:relative;display:flex;align-items:flex-start;gap:12px}
 
 <header id="menu">
   <div class="menu-row" id="menuRow"></div>
+  <div class="view-ctl">
+  <button id="showAllBtn" type="button" hidden aria-keyshortcuts="Control+Shift+F">Show all</button>
   <button id="viewBtn" type="button" aria-label="View options" aria-expanded="false" aria-controls="viewPanel" title="View options">
     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
       <line x1="3.5" y1="8" x2="20.5" y2="8"/><line x1="3.5" y1="16" x2="20.5" y2="16"/>
       <circle cx="9" cy="8" r="2.6" fill="var(--bg)"/><circle cx="15" cy="16" r="2.6" fill="var(--bg)"/>
     </svg>
   </button>
+  </div>
   <div id="viewPanel" role="dialog" aria-modal="false" aria-labelledby="viewTitle" tabindex="-1" hidden>
     <h2 id="viewTitle">View</h2>
     <button class="view-switch" type="button" role="switch" aria-checked="true" aria-label="Show favourites" data-region="menu">Favourites<span class="sw" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17.5 19 7"/></svg></span></button>
@@ -483,6 +598,15 @@ header#menu{position:relative;display:flex;align-items:flex-start;gap:12px}
       <button class="preset" type="button" data-preset="calm" title="Ctrl+Shift+2">Calm</button>
       <button class="preset" type="button" data-preset="search" title="Ctrl+Shift+3">Search only</button>
     </div>
+    <div class="panel-group" id="peekGroup">
+      <button class="view-switch" id="peekSwitch" type="button" role="switch" aria-checked="false" aria-labelledby="peekLbl" aria-describedby="peekSub"><span class="lbl"><span id="peekLbl">Peek</span><span class="sub" id="peekSub">Rest the pointer at the top or bottom edge to see hidden favourites or footer buttons.</span></span><span class="sw" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17.5 19 7"/></svg></span></button>
+    </div>
+    <div class="panel-group" id="voiceGroup" hidden>
+      <h3>Voice</h3>
+      <p id="voiceNote">Your browser will download its English speech pack. Audio stays on this device.</p>
+      <button class="panel-btn" id="voiceInstallBtn" type="button">Download voice pack</button>
+    </div>
+    <button class="panel-btn" id="tutorialBtn" type="button">Tutorial</button>
   </div>
 </header>
 
@@ -492,7 +616,7 @@ header#menu{position:relative;display:flex;align-items:flex-start;gap:12px}
       <span>G</span><span>o</span><span>o</span><span>g</span><span>l</span><span>e</span>
     </div>
     <form id="searchForm" action="https://www.google.com/search" method="get" autocomplete="on">
-      <input type="text" id="q" name="q" placeholder="Search the web" aria-label="Search the web" autofocus>
+      <div class="q-wrap" id="qWrap"><input type="text" id="q" name="q" placeholder="Search the web" aria-label="Search the web" autofocus></div>
       <div class="wheel" id="wheel" role="radiogroup" aria-label="Search mode"></div>
     </form>
     <div class="hint">Press <b>/</b> to focus search &middot; <b>&larr;/&rarr;</b> to switch mode &middot; Click the + tile to add a link</div>
@@ -560,6 +684,21 @@ header#menu{position:relative;display:flex;align-items:flex-start;gap:12px}
 
 <div id="toast" role="status" aria-live="polite"></div>
 
+<div id="tour" hidden>
+  <div id="tourCatch"></div>
+  <div id="tourRing"></div>
+  <div class="tour-card" id="tourCard" role="dialog" aria-modal="true" aria-labelledby="tourTitle" aria-describedby="tourBody">
+    <p id="tourCount"></p>
+    <h2 id="tourTitle" tabindex="-1"></h2>
+    <p id="tourBody"></p>
+    <div class="tour-actions">
+      <button id="tourClose" type="button">Close</button>
+      <button id="tourBack" type="button">Back</button>
+      <button id="tourNext" type="button">Next</button>
+    </div>
+  </div>
+</div>
+
 <script>
 (function(){
 "use strict";
@@ -569,6 +708,7 @@ var LS_THEME="homepage.theme";
 var LS_MODE="homepage.mode";
 var LS_YT="homepage.yt";
 var LS_VIEW="homepage.view";
+var LS_PEEK="homepage.peek";
 var MAX_EMBED=3000000;
 
 var MODES=[
@@ -602,6 +742,12 @@ var activeMode=0;
 var ytMode=false;
 var toastTimer=null;
 var viewState={menu:true,hint:true,foot:true};
+var lastHiddenState={menu:false,hint:false,foot:false};
+var peekOn=false;
+var REDUCED=false;
+try{REDUCED=!!(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches);}catch(e){}
+var IS_MAC=/Mac|iPhone|iPad/.test((navigator.platform||"")+" "+(navigator.userAgent||""));
+var MOD_KEY=IS_MAC?"Cmd":"Ctrl";
 
 var menuRow=document.getElementById("menuRow");
 var searchForm=document.getElementById("searchForm");
@@ -655,6 +801,9 @@ function load(){
       viewState={menu:vp[0]==="1",hint:vp[1]==="1",foot:vp[2]==="1"};
     }
   }
+  var pk=null;
+  try{pk=localStorage.getItem(LS_PEEK);}catch(e){}
+  peekOn=(pk==="1");
 }
 
 function save(){
@@ -1172,6 +1321,8 @@ var viewEls={
 var ytHintEl=document.getElementById("ytHint");
 var viewPanel=document.getElementById("viewPanel");
 var viewBtn=document.getElementById("viewBtn");
+var showAllBtn=document.getElementById("showAllBtn");
+var qWrap=document.getElementById("qWrap");
 
 var PRESETS={
   everything:{menu:true,hint:true,foot:true},
@@ -1211,14 +1362,27 @@ function syncViewUI(){
 }
 
 function applyView(st,announce,save){
+  resetPeek();
   viewState={menu:!!st.menu,hint:!!st.hint,foot:!!st.foot};
   viewEls.menu.hidden=!viewState.menu;
   viewEls.hint.hidden=!viewState.hint;
   ytHintEl.hidden=!viewState.hint;
   viewEls.foot.hidden=!viewState.foot;
+  if(viewVisibleCount()<3){lastHiddenState={menu:viewState.menu,hint:viewState.hint,foot:viewState.foot};}
+  showAllBtn.hidden=viewVisibleCount()===3;
   syncViewUI();
   if(save!==false)saveView();
   if(announce)showToast(announce);
+}
+
+/* One chord both ways: hide everything, or bring back what was there. */
+function toggleAllView(){
+  if(viewVisibleCount()<3){
+    applyView(PRESETS.everything,viewAnnouncement(PRESETS.everything),true);
+  }else{
+    var back={menu:lastHiddenState.menu,hint:lastHiddenState.hint,foot:lastHiddenState.foot};
+    applyView(back,viewAnnouncement(back),true);
+  }
 }
 
 function viewAnnouncement(st){
@@ -1248,7 +1412,13 @@ viewBtn.addEventListener("click",function(){
 document.addEventListener("click",function(ev){
   if(viewPanel.hidden)return;
   if(viewPanel.contains(ev.target)||viewBtn.contains(ev.target))return;
+  if(tourEl.contains(ev.target))return;
   closeViewPanel(false);
+});
+
+showAllBtn.addEventListener("click",function(){
+  applyView(PRESETS.everything,viewAnnouncement(PRESETS.everything),true);
+  viewBtn.focus();
 });
 
 (function(){
@@ -1295,6 +1465,11 @@ document.addEventListener("keydown",function(ev){
   }
   var name="";
   if((ev.ctrlKey||ev.metaKey)&&ev.shiftKey){
+    if(ev.code==="KeyF"){
+      ev.preventDefault();
+      toggleAllView();
+      return;
+    }
     if(ev.code==="Digit1")name="everything";
     else if(ev.code==="Digit2")name="calm";
     else if(ev.code==="Digit3")name="search";
@@ -1360,6 +1535,7 @@ function removeMic(){
   if(voiceRec){try{voiceRec.abort();}catch(e){} voiceRec=null;}
   if(micBtn&&micBtn.parentNode)micBtn.parentNode.removeChild(micBtn);
   micBtn=null;
+  qInput.classList.remove("has-mic");
 }
 
 function setListening(on){
@@ -1378,19 +1554,31 @@ function buildMic(){
   micBtn.setAttribute("aria-label","Voice commands");
   micBtn.title="Voice commands";
   micBtn.addEventListener("click",toggleListen);
-  searchForm.appendChild(micBtn);
+  qWrap.appendChild(micBtn);
+  qInput.classList.add("has-mic");
 }
 
 function handleVoice(raw){
   var t=(raw||"").toLowerCase();
   if(!t)return;
-  if(/\b(search only|only search|just search)\b/.test(t)){applyView(PRESETS.search,viewAnnouncement(PRESETS.search),true);return;}
-  if(/\b(everything|show all)\b/.test(t)){applyView(PRESETS.everything,viewAnnouncement(PRESETS.everything),true);return;}
+  /* Hide phrases first: "hide everything" contains "everything". */
+  if(/\b(hide everything|hide all|search only|only search|just search|focus)\b/.test(t)){applyView(PRESETS.search,viewAnnouncement(PRESETS.search),true);return;}
+  if(/\b(show everything|show all|everything)\b/.test(t)){applyView(PRESETS.everything,viewAnnouncement(PRESETS.everything),true);return;}
   if(/\bcalm\b/.test(t)){applyView(PRESETS.calm,viewAnnouncement(PRESETS.calm),true);return;}
+  var reg=/\b(show|hide)\s+(the\s+)?(favou?rites|instructions|footer)\b/.exec(t);
+  if(reg){
+    var key=reg[3].indexOf("fav")===0?"menu":(reg[3]==="instructions"?"hint":"foot");
+    var LBL={menu:"Favourites",hint:"Instructions",foot:"Footer buttons"};
+    var next={menu:viewState.menu,hint:viewState.hint,foot:viewState.foot};
+    next[key]=(reg[1]==="show");
+    applyView(next,LBL[key]+(next[key]?" shown":" hidden"),true);
+    return;
+  }
   if(/\b(youtube|you tube)\b/.test(t)){setYt(true);showToast("Mode: YouTube");qInput.focus();return;}
   if(/\bgemini\b/.test(t)){setYt(false);setMode(1);showToast("Mode: Gemini");qInput.focus();return;}
   if(/\ball\b/.test(t)){setYt(false);setMode(2);showToast("Mode: All");qInput.focus();return;}
   if(/\b(google|web)\b/.test(t)){setYt(false);setMode(0);showToast("Mode: Google");qInput.focus();return;}
+  if(/\b(tutorial|help)\b/.test(t)){startTour();return;}
   showToast("Not recognised.");
 }
 
@@ -1466,15 +1654,310 @@ function initVoice(){
   if(!promise||typeof promise.then!=="function"){setVoiceStatus("unavailable");return;}
   promise.then(function(status){
     setVoiceStatus(status);
-    if(status==="available")buildMic();
+    if(status==="available"){buildMic();voiceGroup.hidden=true;}
+    else if((status==="downloadable"||status==="downloading")&&typeof SRClass.install==="function"){showVoiceInstall(status);}
   },function(){
     setVoiceStatus("unavailable");
   });
 }
 
+/* The speech pack comes from the browser vendor, so it is fetched only on a click. */
+var voiceGroup=document.getElementById("voiceGroup");
+var voiceNote=document.getElementById("voiceNote");
+var voiceInstallBtn=document.getElementById("voiceInstallBtn");
+var VOICE_DISCLOSURE="Your browser will download its English speech pack. Audio stays on this device.";
+
+function showVoiceInstall(status){
+  voiceGroup.hidden=false;
+  voiceInstallBtn.disabled=(status==="downloading");
+  voiceInstallBtn.textContent=status==="downloading"?"Downloading voice pack":"Download voice pack";
+  voiceNote.textContent=VOICE_DISCLOSURE;
+}
+
+voiceInstallBtn.addEventListener("click",function(){
+  if(!SRClass||typeof SRClass.install!=="function")return;
+  voiceInstallBtn.disabled=true;
+  voiceInstallBtn.textContent="Downloading voice pack";
+  var p=null;
+  try{p=SRClass.install({langs:["en-US"],processLocally:true});}catch(e){p=null;}
+  Promise.resolve(p).then(function(){
+    return SRClass.available({langs:["en-US"],processLocally:true});
+  }).then(function(status){
+    setVoiceStatus(status);
+    if(status==="available"){
+      voiceGroup.hidden=true;
+      buildMic();
+      showToast("Voice ready. The microphone is in the search box.");
+    }else{
+      showVoiceInstall(status==="downloading"?"downloading":"downloadable");
+      voiceNote.textContent="The speech pack is not installed yet. "+VOICE_DISCLOSURE;
+    }
+  }).catch(function(){
+    showVoiceInstall("downloadable");
+    voiceNote.textContent="The download did not finish. "+VOICE_DISCLOSURE;
+  });
+});
+
+/* ---------- Guided tutorial (started from the View panel) ---------- */
+var tourEl=document.getElementById("tour");
+var tourRing=document.getElementById("tourRing");
+var tourCard=document.getElementById("tourCard");
+var tourCount=document.getElementById("tourCount");
+var tourTitle=document.getElementById("tourTitle");
+var tourBody=document.getElementById("tourBody");
+var tourBack=document.getElementById("tourBack");
+var tourNext=document.getElementById("tourNext");
+var tourClose=document.getElementById("tourClose");
+var tourStep=0;
+var tourReturnFocus=null;
+
+function escHtml(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];});}
+function pageAddress(){return location.href.split(/[?#]/)[0];}
+function isShown(el){return !!el&&el.getClientRects().length>0;}
+
+var TOUR=[
+  {panel:false,title:"View options",
+   target:function(){return viewBtn;},
+   body:function(){return "This button opens the View panel. It controls which parts of this page you see.";}},
+  {panel:true,title:"Show or hide one part",
+   target:function(){return [].slice.call(viewPanel.querySelectorAll(".view-switch[data-region]"));},
+   body:function(){return "Each switch shows or hides one part of the page: favourites, instructions or the footer buttons. A hidden part is removed, so the Tab key skips it too.";}},
+  {panel:true,title:"Presets",
+   target:function(){return viewPanel.querySelector(".presets");},
+   body:function(){return "<b>Everything</b> shows the whole page. <b>Calm</b> hides favourites and instructions. <b>Search only</b> leaves the search box and the search modes.";}},
+  {panel:true,title:"Peek",
+   target:function(){return peekSwitch;},
+   body:function(){
+     var b="When favourites or footer buttons are hidden, Peek shows them without changing your settings. Rest the pointer at the top edge of the window for favourites, or at the bottom edge for footer buttons. Move the pointer away and they hide again.";
+     if(REDUCED)return b+" Peek is off on this device because your system asks for reduced motion.";
+     return b+" Peek is "+(peekOn?"on":"off")+". This switch turns it "+(peekOn?"off":"on")+".";
+   }},
+  {panel:false,title:"Show all",
+   target:function(){return showAllBtn.hidden?viewBtn:showAllBtn;},
+   body:function(){
+     if(showAllBtn.hidden)return "When anything is hidden, a <b>Show all</b> button appears next to View options. One click brings everything back.";
+     return "This button appears whenever something is hidden. One click brings everything back.";
+   }},
+  {panel:false,title:"Keyboard",
+   target:function(){return qWrap;},
+   body:function(){
+     var k=MOD_KEY;
+     return "<kbd>"+k+"+Shift+F</kbd> hides everything and brings it back, even while you are typing in the search box. <kbd>"+k+"+Shift+1</kbd>, <kbd>2</kbd> and <kbd>3</kbd> choose Everything, Calm and Search only.";
+   }},
+  {panel:false,title:"Address and touch",
+   target:function(){return null;},
+   body:function(){
+     return "To open this page in Search only, for example as your browser homepage, use <code class=\"url\">"+escHtml(pageAddress())+"?view=search</code><code>?view=calm</code> and <code>?view=all</code> also work. On a touch screen, swipe left on empty space to hide more, and right to show more.";
+   }},
+  {panel:function(){return !voiceGroup.hidden;},title:"Voice",
+   target:function(){return micBtn||(voiceGroup.hidden?null:voiceGroup);},
+   body:function(){
+     var phrases="Say <b>Google</b>, <b>Gemini</b>, <b>All</b> or <b>YouTube</b> to change the search mode, or <b>Calm</b>, <b>Search only</b> or <b>Show all</b> to change the view.";
+     if(micBtn)return "Press the microphone in the search box, then speak. "+phrases+" Speech is recognised on this device and audio is not sent anywhere.";
+     if(!voiceGroup.hidden)return "Voice commands work after your browser downloads its English speech pack with the button shown here. Audio stays on this device. "+phrases;
+     return "This browser cannot recognise speech on the device, so voice commands are off. Recent versions of Chrome can.";
+   }}
+];
+
+function unionRect(t){
+  var els=Array.isArray(t)?t:[t];
+  var r=null;
+  for(var i=0;i<els.length;i++){
+    var e=els[i];
+    if(!isShown(e))continue;
+    var b=e.getBoundingClientRect();
+    if(!r){r={l:b.left,t:b.top,r:b.right,b:b.bottom};}
+    else{r.l=Math.min(r.l,b.left);r.t=Math.min(r.t,b.top);r.r=Math.max(r.r,b.right);r.b=Math.max(r.b,b.bottom);}
+  }
+  return r;
+}
+
+function placeTour(){
+  if(tourEl.hidden)return;
+  var t=TOUR[tourStep].target();
+  var r=t?unionRect(t):null;
+  var pad=6,m=16;
+  tourRing.style.cssText="";
+  if(r){
+    tourRing.classList.remove("no-target");
+    tourRing.style.left=(r.l-pad)+"px";
+    tourRing.style.top=(r.t-pad)+"px";
+    tourRing.style.width=(r.r-r.l+pad*2)+"px";
+    tourRing.style.height=(r.b-r.t+pad*2)+"px";
+  }else{
+    tourRing.classList.add("no-target");
+  }
+  var vw=window.innerWidth,vh=window.innerHeight;
+  var cw=tourCard.offsetWidth,ch=tourCard.offsetHeight;
+  var x,y;
+  if(!r){x=(vw-cw)/2;y=(vh-ch)/2;}
+  else if(vw<600){x=m;y=((r.t+r.b)/2>vh/2)?m:vh-ch-m;}
+  else{
+    var first=Array.isArray(t)?t[0]:t;
+    if(viewPanel.contains(first)){
+      var pr=viewPanel.getBoundingClientRect();
+      x=pr.left-cw-m;y=r.t;
+      if(x<m){x=m;y=pr.bottom+m;}
+    }else{
+      x=(r.l+r.r)/2-cw/2;
+      y=r.b+pad+m;
+      if(y+ch>vh-m)y=r.t-pad-m-ch;
+    }
+  }
+  x=Math.max(m,Math.min(x,vw-cw-m));
+  y=Math.max(m,Math.min(y,vh-ch-m));
+  tourCard.style.left=x+"px";
+  tourCard.style.top=y+"px";
+}
+
+function showStep(i){
+  tourStep=i;
+  var s=TOUR[i];
+  var wantPanel=(typeof s.panel==="function")?s.panel():s.panel;
+  if(wantPanel&&viewPanel.hidden){viewPanel.hidden=false;viewBtn.setAttribute("aria-expanded","true");}
+  if(!wantPanel&&!viewPanel.hidden){viewPanel.hidden=true;viewBtn.setAttribute("aria-expanded","false");}
+  tourCount.textContent="Step "+(i+1)+" of "+TOUR.length;
+  tourTitle.textContent=s.title;
+  tourBody.innerHTML=s.body();
+  tourBack.hidden=(i===0);
+  tourNext.textContent=(i===TOUR.length-1)?"Done":"Next";
+  placeTour();
+  tourTitle.focus();
+}
+
+function startTour(){
+  if(!tourEl.hidden)return;
+  resetPeek();
+  tourReturnFocus=document.activeElement;
+  tourEl.hidden=false;
+  showStep(0);
+}
+
+function endTour(){
+  if(tourEl.hidden)return;
+  tourEl.hidden=true;
+  closeViewPanel(false);
+  var f=isShown(tourReturnFocus)?tourReturnFocus:viewBtn;
+  try{f.focus();}catch(e){}
+}
+
+tourNext.addEventListener("click",function(){
+  if(tourStep>=TOUR.length-1){endTour();}else{showStep(tourStep+1);}
+});
+tourBack.addEventListener("click",function(){if(tourStep>0)showStep(tourStep-1);});
+tourClose.addEventListener("click",endTour);
+document.getElementById("tutorialBtn").addEventListener("click",startTour);
+window.addEventListener("resize",placeTour);
+
+/* While the tutorial is open it owns the keyboard; the page shortcuts wait. */
+window.addEventListener("keydown",function(ev){
+  if(tourEl.hidden)return;
+  ev.stopPropagation();
+  if(ev.key==="Escape"){ev.preventDefault();endTour();return;}
+  if(ev.key==="ArrowRight"){ev.preventDefault();tourNext.click();return;}
+  if(ev.key==="ArrowLeft"){ev.preventDefault();if(tourStep>0)showStep(tourStep-1);return;}
+  if(ev.key==="Tab"){
+    var btns=[].slice.call(tourCard.querySelectorAll("button")).filter(function(b){return !b.hidden;});
+    var first=btns[0],last=btns[btns.length-1];
+    var a=document.activeElement;
+    if(!tourCard.contains(a)){ev.preventDefault();first.focus();}
+    else if(ev.shiftKey&&(a===first||a===tourTitle)){ev.preventDefault();last.focus();}
+    else if(!ev.shiftKey&&a===last){ev.preventDefault();first.focus();}
+  }
+},true);
+
+/* ---------- Peek: optional, off by default, mouse and pen only ---------- */
+var peekSwitch=document.getElementById("peekSwitch");
+var peekSub=document.getElementById("peekSub");
+var PEEK_TEXT="Rest the pointer at the top or bottom edge to see hidden favourites or footer buttons.";
+var PEEK_BAND=64,PEEK_DWELL=350,PEEK_RECEDE=450;
+var peekZone=null,peekTimer=null,recedeTimer=null,peeked=null;
+
+function peekEl(z){return z==="top"?viewEls.menu:viewEls.foot;}
+function hiddenByUser(z){return z==="top"?!viewState.menu:!viewState.foot;}
+
+function syncPeekUI(){
+  peekSwitch.setAttribute("aria-checked",(peekOn&&!REDUCED)?"true":"false");
+  peekSwitch.setAttribute("aria-disabled",REDUCED?"true":"false");
+  peekSub.textContent=REDUCED?"Off because your system asks for reduced motion. "+PEEK_TEXT:PEEK_TEXT;
+}
+
+peekSwitch.addEventListener("click",function(){
+  if(REDUCED){showToast("Peek is off because your system asks for reduced motion.");return;}
+  peekOn=!peekOn;
+  try{localStorage.setItem(LS_PEEK,peekOn?"1":"0");}catch(e){}
+  if(!peekOn)resetPeek();
+  syncPeekUI();
+  showToast(peekOn?"Peek on":"Peek off");
+});
+
+function resetPeek(){
+  clearTimeout(peekTimer);clearTimeout(recedeTimer);
+  peekTimer=null;recedeTimer=null;peekZone=null;
+  if(peeked){
+    var el=peekEl(peeked);
+    el.classList.remove("peeked");
+    if(hiddenByUser(peeked))el.hidden=true;
+    peeked=null;
+  }
+}
+
+function peekZoneAt(y){
+  if(peeked){
+    var r=peekEl(peeked).getBoundingClientRect();
+    if(peeked==="top"&&y<=r.bottom+16)return "top";
+    if(peeked==="bottom"&&y>=r.top-16)return "bottom";
+  }
+  if(y<=PEEK_BAND)return "top";
+  if(y>=window.innerHeight-PEEK_BAND)return "bottom";
+  return null;
+}
+
+function peekReveal(z){
+  if(!hiddenByUser(z))return;
+  if(peeked&&peeked!==z)peekRecede();
+  var el=peekEl(z);
+  el.hidden=false;
+  el.classList.add("peeked");
+  peeked=z;
+}
+
+function peekRecede(){
+  if(!peeked)return;
+  var el=peekEl(peeked);
+  if(el.contains(document.activeElement))return;
+  el.classList.remove("peeked");
+  if(hiddenByUser(peeked))el.hidden=true;
+  peeked=null;
+}
+
+function peekSetZone(z){
+  if(z===peekZone)return;
+  peekZone=z;
+  clearTimeout(peekTimer);clearTimeout(recedeTimer);
+  if(z&&z!==peeked){peekTimer=setTimeout(function(){if(peekZone===z)peekReveal(z);},PEEK_DWELL);}
+  else if(!z&&peeked){recedeTimer=setTimeout(function(){if(!peekZone)peekRecede();},PEEK_RECEDE);}
+}
+
+document.addEventListener("pointermove",function(ev){
+  if(!peekOn||REDUCED||!tourEl.hidden)return;
+  if(ev.pointerType&&ev.pointerType!=="mouse"&&ev.pointerType!=="pen")return;
+  if(viewState.menu&&viewState.foot&&!peeked)return;
+  var z=peekZoneAt(ev.clientY);
+  /* Reaching for Show all or View options must not drop the favourites in the way. */
+  if(ev.target&&ev.target.closest&&ev.target.closest(".view-ctl,#viewPanel"))z=(peeked==="top")?"top":null;
+  peekSetZone(z);
+});
+document.documentElement.addEventListener("mouseleave",function(){if(peekOn)peekSetZone(null);});
+document.addEventListener("focusout",function(){
+  if(!peeked)return;
+  setTimeout(function(){if(!peekZone)peekRecede();},PEEK_RECEDE);
+});
+
 load();
 var urlView=viewFromUrl();
 if(urlView){applyView(PRESETS[urlView],false,false);}else{applyView(viewState,false,false);}
+syncPeekUI();
 render();
 renderWheel();
 initVoice();
