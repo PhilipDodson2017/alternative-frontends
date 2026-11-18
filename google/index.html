@@ -13,6 +13,7 @@
   --tile-border:none;
   --tile-shadow:0 4px 14px rgba(255,255,255,.08);
   --accent:#ffde00;
+  --accent-ink:#000000;
   --input-bg:#000000;
   --input-fg:#ffffff;
   --input-border:#ffffff;
@@ -28,6 +29,7 @@ body.theme-light{
   --tile-border:3px solid #000000;
   --tile-shadow:0 4px 12px rgba(0,0,0,.12);
   --accent:#0057ff;
+  --accent-ink:#ffffff;
   --input-bg:#ffffff;
   --input-fg:#000000;
   --input-border:#000000;
@@ -37,12 +39,14 @@ body.theme-light{
 }
 body.yt-mode{
   --accent:#ff0000;
+  --accent-ink:#000000;
   --danger:#ff0000;
 }
 body.yt-mode .wordmark span{color:#ff0000}
 body.yt-mode .hint{display:none}
 body.yt-mode #ytHint{display:block}
 *{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
 html,body{height:100%}
 body{
   background:var(--bg);
@@ -56,6 +60,62 @@ body{
 header#menu{
   padding:26px 24px 10px;
 }
+.menu-bar{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-bottom:8px;
+}
+.menu-left{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-right:auto;
+}
+.chip{
+  font:inherit;
+  font-size:12px;
+  font-weight:600;
+  color:var(--muted);
+  background:transparent;
+  border:1px solid var(--muted);
+  border-radius:999px;
+  padding:6px 12px;
+  cursor:pointer;
+  white-space:nowrap;
+  transition:color .15s,border-color .15s,background .15s;
+}
+.chip:hover{color:var(--fg);border-color:var(--fg)}
+.chip:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.chip[aria-pressed="true"]{
+  color:var(--accent-ink);
+  background:var(--accent);
+  border-color:var(--accent);
+}
+.chip:disabled{opacity:.6;cursor:default}
+.focus-btn{
+  font:inherit;
+  font-size:14px;
+  font-weight:700;
+  color:var(--fg);
+  background:transparent;
+  border:2px solid var(--fg);
+  border-radius:999px;
+  padding:9px 20px;
+  cursor:pointer;
+  white-space:nowrap;
+  transition:background .15s,color .15s,border-color .15s;
+}
+.focus-btn:hover{background:var(--fg);color:var(--bg)}
+.focus-btn[aria-pressed="true"]{
+  background:var(--accent);
+  border-color:var(--accent);
+  color:var(--accent-ink);
+}
+.focus-btn:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
 .menu-row{
   display:flex;
   gap:18px;
@@ -63,6 +123,8 @@ header#menu{
   padding-bottom:12px;
   scrollbar-width:thin;
 }
+.menu-row.peeked{animation:peekIn .16s ease-out}
+@keyframes peekIn{from{opacity:0}to{opacity:1}}
 .menu-row::-webkit-scrollbar{height:6px}
 .menu-row::-webkit-scrollbar-thumb{background:var(--muted);border-radius:3px}
 .tile{
@@ -206,7 +268,7 @@ main{
 .wheel-seg:hover{color:var(--fg)}
 .wheel-seg.active{
   background:var(--accent);
-  color:var(--bg);
+  color:var(--accent-ink);
   transform:scale(1.05);
 }
 .wheel-seg .wicon{display:inline-flex;align-items:center}
@@ -216,14 +278,35 @@ main{
   white-space:nowrap;
 }
 .wheel-seg:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
-.hint{margin-top:22px;font-size:12px;color:var(--muted);letter-spacing:.5px}
+#voiceSlot{
+  flex:0 0 auto;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+  max-width:280px;
+}
+.voice-note{
+  font-size:12px;
+  line-height:1.4;
+  color:var(--muted);
+}
+.hint-row{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:center;
+  gap:10px 14px;
+  margin-top:22px;
+}
+.hint{font-size:12px;color:var(--muted);letter-spacing:.5px}
 #ytHint{
   display:none;
-  margin-top:10px;
   font-size:12px;
   color:var(--accent);
   letter-spacing:.5px;
 }
+body.theme-light.yt-mode #ytHint{color:#cc0000}
 #toast{
   position:fixed;
   bottom:26px;
@@ -246,11 +329,21 @@ main{
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 footer{
   padding:14px 24px 22px;
+}
+.footer-line{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:18px;
+  flex-wrap:wrap;
+}
+.footer-btns{
   display:flex;
   justify-content:center;
   gap:10px;
   flex-wrap:wrap;
 }
+.footer-btns.peeked{animation:peekIn .16s ease-out}
 footer button{
   padding:8px 14px;
   font-size:13px;
@@ -263,6 +356,13 @@ footer button{
 }
 footer button:hover{border-color:var(--fg)}
 footer button.danger:hover{border-color:var(--danger);color:var(--danger)}
+footer button.chip{
+  padding:6px 12px;
+  font-size:12px;
+  color:var(--muted);
+  border-width:1px;
+}
+footer button.chip:hover{color:var(--fg);border-color:var(--fg)}
 #modal,#homeModal{
   position:fixed;
   inset:0;
@@ -340,7 +440,7 @@ footer button.danger:hover{border-color:var(--danger);color:var(--danger)}
   border-radius:999px;
   cursor:pointer;
 }
-#saveLink,#copyHome{background:var(--accent);color:var(--bg)}
+#saveLink,#copyHome{background:var(--accent);color:var(--accent-ink)}
 #cancelLink,#closeHome{background:transparent;color:var(--fg);border:2px solid var(--fg)}
 #homeModal .modal-box{max-height:100%;overflow-y:auto}
 .home-note{font-size:14px;line-height:1.5;color:var(--muted);margin-bottom:16px}
@@ -355,16 +455,31 @@ footer button.danger:hover{border-color:var(--danger);color:var(--danger)}
   .wordmark{font-size:46px}
   #searchForm{flex-direction:column}
   .wheel{width:100%;justify-content:center}
+  .menu-bar{margin-bottom:4px}
+  .hint-row{margin-top:14px}
 }
-@media (min-width:768px){.search-wrap{max-width:820px}}
+@media (min-width:768px){
+  .search-wrap{max-width:820px}
+  #q{min-width:260px}
+}
 @media (min-width:1024px){.search-wrap{max-width:980px}}
 @media (min-width:1440px){.search-wrap{max-width:1120px}}
 @media (min-width:1920px){#q{max-width:533px}}
+@media (prefers-reduced-motion: reduce){
+  *{transition:none!important;animation:none!important}
+}
 </style>
 </head>
 <body>
 
 <header id="menu">
+  <div class="menu-bar">
+    <div class="menu-left" id="favGroup">
+      <button id="favToggle" class="chip" type="button">Hide favourites</button>
+      <button id="peekToggle" class="chip" type="button" aria-pressed="false" aria-label="Peek: show a region while the pointer rests near it" title="Show a region while the pointer rests near it">Peek</button>
+    </div>
+    <button id="focusBtn" class="focus-btn" type="button" aria-pressed="false" aria-keyshortcuts="Control+Shift+F" title="Hide all (Ctrl+Shift+F)">Hide all</button>
+  </div>
   <div class="menu-row" id="menuRow"></div>
 </header>
 
@@ -376,19 +491,30 @@ footer button.danger:hover{border-color:var(--danger);color:var(--danger)}
     <form id="searchForm" action="https://www.google.com/search" method="get" autocomplete="on">
       <input type="text" id="q" name="q" placeholder="Search the web" aria-label="Search the web" autofocus>
       <div class="wheel" id="wheel" role="radiogroup" aria-label="Search mode"></div>
+      <div id="voiceSlot"></div>
     </form>
-    <div class="hint">Press <b>/</b> to focus search &middot; <b>&larr;/&rarr;</b> to switch mode &middot; Click the + tile to add a link</div>
-    <div id="ytHint">Press <b>G</b> to return to Google Mode.</div>
+    <div class="hint-row" id="hintRow">
+      <div id="hintGroup">
+        <div class="hint">Press <b>/</b> to focus search &middot; <b>&larr;/&rarr;</b> to switch mode &middot; Click the + tile to add a link &middot; <b>Ctrl+Shift+F</b> to hide everything</div>
+        <div id="ytHint">Press <b>G</b> to return to Google Mode.</div>
+      </div>
+      <button id="hintToggle" class="chip" type="button">Hide instructions</button>
+    </div>
   </div>
 </main>
 
 <footer>
-  <button id="themeBtn" type="button">Toggle theme</button>
-  <button id="exportBtn" type="button">Export links</button>
-  <button id="importBtn" type="button">Import links</button>
-  <button id="homeBtn" type="button">Set as homepage</button>
-  <button id="resetBtn" class="danger" type="button">Reset links</button>
-  <input type="file" id="importFile" accept="application/json" hidden>
+  <div class="footer-line" id="footerLine">
+    <button id="footerToggle" class="chip" type="button">Hide page buttons</button>
+    <div class="footer-btns" id="footerBtns">
+      <button id="themeBtn" type="button">Toggle theme</button>
+      <button id="exportBtn" type="button">Export links</button>
+      <button id="importBtn" type="button">Import links</button>
+      <button id="homeBtn" type="button">Set as homepage</button>
+      <button id="resetBtn" class="danger" type="button">Reset links</button>
+      <input type="file" id="importFile" accept="application/json" hidden>
+    </div>
+  </div>
 </footer>
 
 <div id="modal">
@@ -450,6 +576,9 @@ var LS_LINKS="homepage.links";
 var LS_THEME="homepage.theme";
 var LS_MODE="homepage.mode";
 var LS_YT="homepage.yt";
+var LS_FOCUS="homepage.focus";
+var LS_REGIONS="homepage.regions";
+var LS_PEEK="homepage.peek";
 var MAX_EMBED=3000000;
 
 var MODES=[
@@ -499,6 +628,27 @@ var previewImg=document.getElementById("previewImg");
 var modalTitle=document.getElementById("modalTitle");
 var imgHint=document.getElementById("imgHint");
 
+var focusBtn=document.getElementById("focusBtn");
+var favToggle=document.getElementById("favToggle");
+var favGroup=document.getElementById("favGroup");
+var peekToggle=document.getElementById("peekToggle");
+var hintRow=document.getElementById("hintRow");
+var hintGroup=document.getElementById("hintGroup");
+var hintToggle=document.getElementById("hintToggle");
+var footerBtns=document.getElementById("footerBtns");
+var footerLine=document.getElementById("footerLine");
+var footerToggle=document.getElementById("footerToggle");
+var voiceSlot=document.getElementById("voiceSlot");
+
+/* ---- focus mode: state ---------------------------------------------- */
+
+var REDUCED=false;
+try{REDUCED=!!(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches);}catch(e){}
+
+var regionsVisible={fav:true,hint:true,footer:true};
+var focusOn=false;
+var peekOn=false;
+
 function letterTile(letter,color,bg){
   var svg='<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96">'+
     '<rect width="96" height="96" rx="18" fill="'+bg+'"/>'+
@@ -536,6 +686,341 @@ function save(){
     alert("Storage is full. Remove an image or link, then try again.");
   }
 }
+
+function loadFocusSettings(){
+  var f=null;
+  try{f=localStorage.getItem(LS_FOCUS);}catch(e){}
+  if(f==="1"){focusOn=true;}
+  var r=null;
+  try{r=localStorage.getItem(LS_REGIONS);}catch(e){}
+  if(r){
+    try{
+      var o=JSON.parse(r);
+      if(o&&typeof o==="object"){
+        if(typeof o.fav==="boolean"){regionsVisible.fav=o.fav;}
+        if(typeof o.hint==="boolean"){regionsVisible.hint=o.hint;}
+        if(typeof o.footer==="boolean"){regionsVisible.footer=o.footer;}
+      }
+    }catch(e){}
+  }
+  var p=null;
+  try{p=localStorage.getItem(LS_PEEK);}catch(e){}
+  if(p==="1"){peekOn=true;}else if(p==="0"){peekOn=false;}
+  var h=String(location.hash||"");
+  if(/^#focus(=1)?$/i.test(h)){focusOn=true;}
+  else if(/^#focus=0$/i.test(h)){focusOn=false;}
+  if(REDUCED){peekOn=false;}
+}
+
+function saveFocusSettings(){
+  try{localStorage.setItem(LS_FOCUS,focusOn?"1":"0");}catch(e){}
+  try{localStorage.setItem(LS_REGIONS,JSON.stringify(regionsVisible));}catch(e){}
+  try{localStorage.setItem(LS_PEEK,peekOn?"1":"0");}catch(e){}
+}
+
+function mirrorHash(){
+  try{
+    var base=location.pathname+location.search;
+    history.replaceState(null,"",base+(focusOn?"#focus":""));
+  }catch(e){}
+}
+
+function applyState(){
+  resetPeek();
+  menuRow.hidden=focusOn||!regionsVisible.fav;
+  favGroup.hidden=focusOn;
+  peekToggle.hidden=focusOn||REDUCED;
+  hintRow.hidden=focusOn;
+  hintGroup.hidden=!regionsVisible.hint;
+  footerBtns.hidden=focusOn||!regionsVisible.footer;
+  footerLine.hidden=focusOn;
+  voiceSlot.hidden=focusOn&&voiceInstallShown;
+  focusBtn.textContent=focusOn?"Show all":"Hide all";
+  focusBtn.setAttribute("aria-pressed",focusOn?"true":"false");
+  focusBtn.setAttribute("title",(focusOn?"Show all":"Hide all")+" (Ctrl+Shift+F)");
+  favToggle.textContent=regionsVisible.fav?"Hide favourites":"Show favourites";
+  hintToggle.textContent=regionsVisible.hint?"Hide instructions":"Show instructions";
+  footerToggle.textContent=regionsVisible.footer?"Hide page buttons":"Show page buttons";
+  peekToggle.setAttribute("aria-pressed",peekOn?"true":"false");
+  if(focusOn){document.body.classList.add("calm");}
+  else{document.body.classList.remove("calm");}
+}
+
+function setFocus(on){
+  focusOn=!!on;
+  if(!focusOn){regionsVisible.fav=true;regionsVisible.hint=true;regionsVisible.footer=true;}
+  saveFocusSettings();
+  applyState();
+  mirrorHash();
+}
+
+function toggleFocus(){setFocus(!focusOn);}
+
+function toggleRegion(key){
+  if(focusOn){focusOn=false;}
+  regionsVisible[key]=!regionsVisible[key];
+  saveFocusSettings();
+  applyState();
+  mirrorHash();
+}
+
+function setPeek(on){
+  peekOn=!!on;
+  saveFocusSettings();
+  applyState();
+}
+
+/* ---- focus mode: intent-based reveal (optional, off by default) ------ */
+
+var PEEK_BAND=64;
+var peekRegion=null;
+var peekTimer=null;
+var recedeTimer=null;
+var revealedRegion=null;
+
+function resetPeek(){
+  clearTimeout(peekTimer);
+  clearTimeout(recedeTimer);
+  peekTimer=null;
+  recedeTimer=null;
+  peekRegion=null;
+  if(revealedRegion){
+    if(revealedRegion==="fav"){menuRow.classList.remove("peeked");}
+    else{footerBtns.classList.remove("peeked");}
+    revealedRegion=null;
+  }
+}
+
+function bandRegion(y){
+  if(y<=PEEK_BAND){return "fav";}
+  if(y>=window.innerHeight-PEEK_BAND){return "footer";}
+  return null;
+}
+
+function revealRegion(region){
+  if(!focusOn||!peekOn||REDUCED){return;}
+  if(!regionsVisible[region]){return;}
+  if(revealedRegion&&revealedRegion!==region){hideReveal();}
+  if(region==="fav"){
+    menuRow.hidden=false;
+    menuRow.classList.add("peeked");
+  }else{
+    footerLine.hidden=false;
+    footerBtns.hidden=false;
+    footerBtns.classList.add("peeked");
+  }
+  revealedRegion=region;
+}
+
+function hideReveal(){
+  if(!revealedRegion){return;}
+  var el=revealedRegion==="fav"?menuRow:footerBtns;
+  if(el.contains(document.activeElement)){return;}
+  if(revealedRegion==="fav"){
+    menuRow.classList.remove("peeked");
+    menuRow.hidden=true;
+  }else{
+    footerBtns.classList.remove("peeked");
+    footerBtns.hidden=true;
+    footerLine.hidden=true;
+  }
+  revealedRegion=null;
+}
+
+function onPointerMove(ev){
+  if(!focusOn||!peekOn||REDUCED){return;}
+  var r=bandRegion(ev.clientY);
+  if(r===peekRegion){return;}
+  peekRegion=r;
+  clearTimeout(peekTimer);
+  clearTimeout(recedeTimer);
+  if(r){
+    peekTimer=setTimeout(function(){if(peekRegion===r){revealRegion(r);}},350);
+  }else{
+    recedeTimer=setTimeout(function(){if(!peekRegion){hideReveal();}},450);
+  }
+}
+
+/* ---- voice: on-device recognition only ------------------------------ */
+
+var voiceCtor=null;
+var voiceRecog=null;
+var voiceStatus="unsupported";
+var voiceListening=false;
+var voiceInstallShown=false;
+
+function detectVoiceCtor(){
+  var C=null;
+  try{C=window.SpeechRecognition||window.webkitSpeechRecognition||null;}catch(e){C=null;}
+  if(!C||typeof C!=="function"){return null;}
+  if(typeof C.available!=="function"){return null;}
+  if(!C.prototype||!("processLocally" in C.prototype)){return null;}
+  return C;
+}
+
+function initVoice(){
+  var C=detectVoiceCtor();
+  if(!C){voiceStatus="unsupported";return;}
+  voiceCtor=C;
+  var p;
+  try{p=C.available({langs:["en-US"],processLocally:true});}catch(e){voiceStatus="unavailable";return;}
+  Promise.resolve(p).then(function(status){
+    voiceStatus=status;
+    if(status==="available"){showMic();}
+    else if((status==="downloadable"||status==="downloading")&&typeof C.install==="function"){showInstall(status);}
+  }).catch(function(){voiceStatus="unavailable";});
+}
+
+function showMic(){
+  voiceSlot.innerHTML="";
+  voiceInstallShown=false;
+  var b=document.createElement("button");
+  b.type="button";
+  b.id="voiceBtn";
+  b.className="chip";
+  b.textContent="Voice";
+  b.setAttribute("aria-pressed","false");
+  b.setAttribute("aria-label","Voice: choose the search mode by voice");
+  b.title="Choose the search mode by voice";
+  b.addEventListener("click",toggleVoice);
+  voiceSlot.appendChild(b);
+  applyState();
+}
+
+function showInstall(status){
+  voiceSlot.innerHTML="";
+  voiceInstallShown=true;
+  var b=document.createElement("button");
+  b.type="button";
+  b.id="voiceInstallBtn";
+  b.className="chip";
+  b.textContent=status==="downloading"?"Downloading voice pack":"Download voice pack";
+  if(status==="downloading"){b.disabled=true;}
+  var note=document.createElement("p");
+  note.className="voice-note";
+  note.textContent="Your browser will download its English speech pack; audio stays on this device.";
+  b.addEventListener("click",function(){installVoice(b,note);});
+  voiceSlot.appendChild(b);
+  voiceSlot.appendChild(note);
+  applyState();
+}
+
+function installVoice(btn,note){
+  if(!voiceCtor||typeof voiceCtor.install!=="function"){return;}
+  btn.disabled=true;
+  btn.textContent="Downloading voice pack";
+  note.textContent="Downloading the speech pack. Audio stays on this device.";
+  var pr;
+  try{pr=voiceCtor.install({langs:["en-US"],processLocally:true});}catch(e){pr=null;}
+  Promise.resolve(pr).then(function(){
+    return voiceCtor.available({langs:["en-US"],processLocally:true});
+  }).then(function(status){
+    voiceStatus=status;
+    if(status==="available"){showMic();showToast("Voice ready");}
+    else{
+      btn.disabled=false;
+      btn.textContent="Download voice pack";
+      note.textContent="The speech pack is not installed yet. Your browser will download its English speech pack; audio stays on this device.";
+    }
+  }).catch(function(){
+    btn.disabled=false;
+    btn.textContent="Download voice pack";
+    note.textContent="Could not download the speech pack. Your browser downloads its English speech pack; audio stays on this device.";
+  });
+}
+
+function setVoiceUI(on){
+  voiceListening=!!on;
+  var b=document.getElementById("voiceBtn");
+  if(!b){return;}
+  b.setAttribute("aria-pressed",on?"true":"false");
+  b.textContent=on?"Listening":"Voice";
+  b.title=on?"Stop listening":"Choose the search mode by voice";
+}
+
+function endVoiceUI(){
+  voiceRecog=null;
+  setVoiceUI(false);
+}
+
+function voiceUnavailable(){
+  voiceStatus="unavailable";
+  voiceCtor=null;
+  voiceRecog=null;
+  voiceListening=false;
+  voiceInstallShown=false;
+  voiceSlot.innerHTML="";
+  showToast("Voice is not available on this device");
+}
+
+function voiceFailed(msg){
+  voiceRecog=null;
+  setVoiceUI(false);
+  showToast(msg);
+}
+
+function toggleVoice(){
+  if(voiceListening){
+    if(voiceRecog){try{voiceRecog.stop();}catch(e){}}
+    return;
+  }
+  startVoice();
+}
+
+function startVoice(){
+  if(!voiceCtor){return;}
+  var r;
+  try{r=new voiceCtor();}catch(e){voiceFailed("Voice is not available on this device");return;}
+  r.processLocally=true;
+  r.lang="en-US";
+  r.continuous=false;
+  r.interimResults=false;
+  r.maxAlternatives=1;
+  r.onresult=function(ev){
+    var txt="";
+    try{txt=ev.results[0][0].transcript;}catch(e){txt="";}
+    handleVoice(txt);
+  };
+  r.onerror=function(ev){
+    var err=ev&&ev.error;
+    if(err==="language-not-supported"){voiceUnavailable();return;}
+    if(err==="not-allowed"||err==="service-not-allowed"){showToast("Microphone permission needed");}
+    else if(err==="no-speech"||err==="aborted"){showToast("Didn't catch that");}
+    else{showToast("Voice did not work on this device");}
+    endVoiceUI();
+  };
+  r.onend=function(){endVoiceUI();};
+  voiceRecog=r;
+  try{r.start();}
+  catch(e){
+    voiceRecog=null;
+    if(e&&(e.name==="LanguageNotSupportedError"||String(e.message||"").indexOf("language-not-supported")>=0)){
+      voiceUnavailable();
+      return;
+    }
+    voiceFailed("Voice is not available on this device");
+    return;
+  }
+  setVoiceUI(true);
+}
+
+function hasWord(words,w){return words.indexOf(w)>=0;}
+
+function handleVoice(raw){
+  var s=String(raw||"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
+  if(!s){showToast("Didn't catch that");return;}
+  var w=s.split(" ");
+  if(hasWord(w,"hide")&&(hasWord(w,"everything")||hasWord(w,"all")||hasWord(w,"focus"))){setFocus(true);showToast("Everything hidden");return;}
+  if(hasWord(w,"show")&&(hasWord(w,"everything")||hasWord(w,"all")||hasWord(w,"focus"))){setFocus(false);showToast("Everything shown");return;}
+  if(hasWord(w,"focus")){setFocus(true);showToast("Everything hidden");return;}
+  if(hasWord(w,"youtube")){setYt(true);showToast("Mode: YouTube");return;}
+  if(hasWord(w,"gemini")){setYt(false);setMode(1);showToast("Mode: Gemini");return;}
+  if(hasWord(w,"google")){setYt(false);setMode(0);showToast("Mode: Google");return;}
+  if(w.length<=2&&hasWord(w,"all")){setYt(false);setMode(2);showToast("Mode: All");return;}
+  showToast("Didn't catch that");
+}
+
+/* ---- end focus mode -------------------------------------------------- */
 
 function openUrl(url){
   var a=document.createElement("a");
@@ -849,9 +1334,19 @@ document.addEventListener("keydown",function(ev){
   var typing=t&&(t.tagName==="INPUT"||t.tagName==="TEXTAREA");
   if(ev.key==="Escape"&&homeModal.classList.contains("open")){closeHome();return;}
   if(ev.key==="Escape"&&modal.classList.contains("open")){closeModal();return;}
+  if((ev.ctrlKey||ev.metaKey)&&ev.shiftKey&&!ev.altKey&&(ev.code==="KeyF"||ev.key==="F"||ev.key==="f")){
+    ev.preventDefault();
+    toggleFocus();
+    return;
+  }
+  if(ev.key==="Escape"&&t===qInput){
+    qInput.blur();
+    return;
+  }
   if(!typing&&!modal.classList.contains("open")&&!homeModal.classList.contains("open")){
     if(ev.key==="ArrowRight"){ev.preventDefault();rotateMode(1);return;}
     if(ev.key==="ArrowLeft"){ev.preventDefault();rotateMode(-1);return;}
+    if(ev.key==="f"||ev.key==="F"){ev.preventDefault();toggleFocus();return;}
     if(ev.key==="y"||ev.key==="Y"){ev.preventDefault();setYt(true);qInput.focus();return;}
     if(ev.key==="g"||ev.key==="G"){ev.preventDefault();setYt(false);qInput.focus();return;}
   }
@@ -860,6 +1355,47 @@ document.addEventListener("keydown",function(ev){
     qInput.focus();
   }
 });
+
+function isBackground(el){
+  if(!el){return false;}
+  if(el===document.body||el===document.documentElement){return true;}
+  if(el===document.querySelector("main")){return true;}
+  if(el===document.querySelector(".search-wrap")){return true;}
+  if(el===document.getElementById("menu")){return true;}
+  if(el===document.querySelector("footer")){return true;}
+  return false;
+}
+
+var lastBgTap=0;
+var touchedAt=0;
+
+document.addEventListener("dblclick",function(ev){
+  if(Date.now()-touchedAt<600){return;}
+  if(!isBackground(ev.target)){return;}
+  ev.preventDefault();
+  toggleFocus();
+});
+
+document.addEventListener("touchend",function(ev){
+  touchedAt=Date.now();
+  if(!isBackground(ev.target)){lastBgTap=0;return;}
+  var now=Date.now();
+  if(now-lastBgTap<400){
+    lastBgTap=0;
+    ev.preventDefault();
+    toggleFocus();
+  }else{
+    lastBgTap=now;
+  }
+},{passive:false});
+
+document.addEventListener("pointermove",onPointerMove);
+
+focusBtn.addEventListener("click",toggleFocus);
+favToggle.addEventListener("click",function(){toggleRegion("fav");});
+hintToggle.addEventListener("click",function(){toggleRegion("hint");});
+footerToggle.addEventListener("click",function(){toggleRegion("footer");});
+peekToggle.addEventListener("click",function(){setPeek(!peekOn);});
 
 document.getElementById("themeBtn").addEventListener("click",function(){
   var light=document.body.classList.toggle("theme-light");
@@ -1035,8 +1571,11 @@ homeModal.addEventListener("click",function(ev){
 });
 
 load();
+loadFocusSettings();
 render();
 renderWheel();
+applyState();
+initVoice();
 })();
 </script>
 </body>
