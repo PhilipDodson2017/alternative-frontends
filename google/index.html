@@ -1558,28 +1558,56 @@ function buildMic(){
   qInput.classList.add("has-mic");
 }
 
-function handleVoice(raw){
-  var t=(raw||"").toLowerCase();
-  if(!t)return;
+/* Words the recognizer is biased toward (Chrome 142+ supports phrases on-device). */
+var VOICE_PHRASES=["Google","Gemini","All","YouTube","Calm","Search only","Show all","Hide everything","Show everything","Show favourites","Hide favourites","Show instructions","Hide instructions","Show footer","Hide footer","Tutorial"];
+var voicePhrasesOK=true;
+
+/* Returns the command a transcript asks for, or null. */
+function voiceCommand(raw){
+  var t=(raw||"").toLowerCase().replace(/[^a-z' ]+/g," ").replace(/\s+/g," ").trim();
+  if(!t)return null;
   /* Hide phrases first: "hide everything" contains "everything". */
-  if(/\b(hide everything|hide all|search only|only search|just search|focus)\b/.test(t)){applyView(PRESETS.search,viewAnnouncement(PRESETS.search),true);return;}
-  if(/\b(show everything|show all|everything)\b/.test(t)){applyView(PRESETS.everything,viewAnnouncement(PRESETS.everything),true);return;}
-  if(/\bcalm\b/.test(t)){applyView(PRESETS.calm,viewAnnouncement(PRESETS.calm),true);return;}
+  if(/\b(hide everything|hide all|search only|only search|just search|focus)\b/.test(t))return {view:"search"};
+  if(/\b(show everything|show all|everything)\b/.test(t))return {view:"everything"};
+  if(/\bcalm\b/.test(t))return {view:"calm"};
   var reg=/\b(show|hide)\s+(the\s+)?(favou?rites|instructions|footer)\b/.exec(t);
-  if(reg){
-    var key=reg[3].indexOf("fav")===0?"menu":(reg[3]==="instructions"?"hint":"foot");
+  if(reg)return {region:reg[3].indexOf("fav")===0?"menu":(reg[3]==="instructions"?"hint":"foot"),show:reg[1]==="show"};
+  if(/\byou ?tube\b/.test(t))return {mode:"yt",label:"YouTube"};
+  /* Common mishearings of the mode words are accepted too. */
+  if(/\b(gemini|jemini|jeminy|jiminy|gemany|germany)\b|\b(jim|jimmy|gem) and i\b/.test(t))return {mode:1,label:"Gemini"};
+  if(/\b(all|awl|aul)\b/.test(t))return {mode:2,label:"All"};
+  if(/\b(google|googol|googl|web)\b/.test(t))return {mode:0,label:"Google"};
+  if(/\b(tutorial|help)\b/.test(t))return {tour:true};
+  return null;
+}
+
+function runVoiceCommand(c,heard){
+  var note=heard?" (heard \u201c"+heard+"\u201d)":"";
+  if(c.view){applyView(PRESETS[c.view],viewAnnouncement(PRESETS[c.view]),true);return;}
+  if(c.region){
     var LBL={menu:"Favourites",hint:"Instructions",foot:"Footer buttons"};
     var next={menu:viewState.menu,hint:viewState.hint,foot:viewState.foot};
-    next[key]=(reg[1]==="show");
-    applyView(next,LBL[key]+(next[key]?" shown":" hidden"),true);
+    next[c.region]=c.show;
+    applyView(next,LBL[c.region]+(c.show?" shown":" hidden"),true);
     return;
   }
-  if(/\b(youtube|you tube)\b/.test(t)){setYt(true);showToast("Mode: YouTube");qInput.focus();return;}
-  if(/\bgemini\b/.test(t)){setYt(false);setMode(1);showToast("Mode: Gemini");qInput.focus();return;}
-  if(/\ball\b/.test(t)){setYt(false);setMode(2);showToast("Mode: All");qInput.focus();return;}
-  if(/\b(google|web)\b/.test(t)){setYt(false);setMode(0);showToast("Mode: Google");qInput.focus();return;}
-  if(/\b(tutorial|help)\b/.test(t)){startTour();return;}
-  showToast("Not recognised.");
+  if(c.tour){startTour();return;}
+  if(c.mode==="yt"){setYt(true);}else{setYt(false);setMode(c.mode);}
+  var plain=(heard||"").toLowerCase().replace(/[^a-z]+/g,"");
+  showToast("Mode: "+c.label+(plain===c.label.toLowerCase()?"":note));
+  qInput.focus();
+}
+
+/* Takes one transcript or the recognizer's list of alternatives, best first. */
+function handleVoice(alts){
+  var list=(typeof alts==="string")?[alts]:(alts||[]);
+  for(var i=0;i<list.length;i++){
+    var c=voiceCommand(list[i]);
+    if(c){runVoiceCommand(c,(list[i]||"").trim());return;}
+  }
+  var heard=(list[0]||"").trim();
+  if(heard){showToast("Heard \u201c"+heard+"\u201d. Say Google, Gemini, All or YouTube.");}
+  else{showToast("Nothing heard. Press the microphone and speak straight away.");}
 }
 
 function toggleListen(){
@@ -1590,42 +1618,57 @@ function toggleListen(){
   if(r.processLocally!==true){removeMic();setVoiceStatus("unavailable");return;}
   r.lang="en-US";
   r.interimResults=false;
-  r.maxAlternatives=1;
+  r.maxAlternatives=5;
   r.continuous=false;
+  if(voicePhrasesOK&&("phrases" in r)&&typeof window.SpeechRecognitionPhrase==="function"){
+    try{r.phrases=VOICE_PHRASES.map(function(p){return new window.SpeechRecognitionPhrase(p,3.0);});}catch(e){}
+  }
+  var gotResult=false,gotError=false,retryPlain=false;
   r.onresult=function(ev){
-    var t="";
-    for(var i=0;i<ev.results.length;i++){
-      var alt=ev.results[i]&&ev.results[i][0];
-      if(alt&&alt.transcript)t+=" "+alt.transcript;
+    gotResult=true;
+    var n=0,i,j;
+    for(i=0;i<ev.results.length;i++){n=Math.max(n,ev.results[i].length||1);}
+    var alts=[];
+    for(j=0;j<n;j++){
+      var s="";
+      for(i=0;i<ev.results.length;i++){
+        var a=ev.results[i][j]||ev.results[i][0];
+        if(a&&a.transcript)s+=" "+a.transcript;
+      }
+      alts.push(s.trim());
     }
-    handleVoice(t);
+    handleVoice(alts);
   };
   r.onerror=function(ev){
+    gotError=true;
     setListening(false);
     var code=ev&&ev.error;
+    if(code==="phrases-not-supported"){voicePhrasesOK=false;retryPlain=true;return;}
     if(code==="language-not-supported"){
       removeMic();
       setVoiceStatus("unavailable");
-      showToast("Voice mode is not available in this browser.");
+      if(SRClass&&typeof SRClass.install==="function"){showVoiceInstall("downloadable");}
+      showToast("The English speech pack is not installed. Download it from View options.");
       return;
     }
-    if(code==="not-allowed"||code==="service-not-allowed"){
-      showToast("Microphone access was blocked.");
-      return;
-    }
-    if(code!=="aborted"&&code!=="no-speech"){
-      showToast("Voice input stopped.");
-    }
+    if(code==="not-allowed"||code==="service-not-allowed"){showToast("The microphone is blocked for this page. Allow it from the icon at the left of the address bar.");return;}
+    if(code==="audio-capture"){showToast("No microphone found. Check that one is connected and that Chrome may use it.");return;}
+    if(code==="no-speech"){showToast("Nothing heard. Press the microphone and speak straight away.");return;}
+    if(code==="network"){showToast("Voice stopped because the browser tried to use the network.");return;}
+    if(code==="aborted")return;
+    showToast("Voice stopped ("+(code||"unknown error")+").");
   };
   r.onend=function(){
     voiceRec=null;
     setListening(false);
+    if(retryPlain){setTimeout(toggleListen,0);return;}
+    if(!gotResult&&!gotError)showToast("Nothing heard. Press the microphone and speak straight away.");
   };
   voiceRec=r;
   try{
     r.start();
     setListening(true);
-    showToast("Listening");
+    showToast("Listening. Say Google, Gemini, All or YouTube.");
   }catch(e){
     voiceRec=null;
     setListening(false);
